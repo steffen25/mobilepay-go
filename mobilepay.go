@@ -145,7 +145,10 @@ func (b *BackendImplementation) Call(method, path, key string, queryParams, body
 	}
 
 	if b.TestMode {
-		logRequest(req)
+		err := logRequest(req)
+		if err != nil {
+			log.Printf("could not log request %v", err)
+		}
 	}
 
 	if err := b.Do(req, newJSONParser(resource)); err != nil {
@@ -195,7 +198,10 @@ func (b *BackendImplementation) Do(req *http.Request, parser responseParser) err
 	defer res.Body.Close()
 
 	if b.TestMode {
-		logResponse(res)
+		err := logResponse(res)
+		if err != nil {
+			log.Printf("could not log response %v", err)
+		}
 	}
 
 	err = CheckResponseError(res)
