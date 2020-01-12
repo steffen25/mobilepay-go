@@ -145,7 +145,10 @@ func (b *BackendImplementation) Call(method, path, key string, queryParams, body
 	}
 
 	if b.TestMode {
-		logRequest(req)
+		err := logRequest(req)
+		if err != nil {
+			log.Printf("could not log request %v", err)
+		}
 	}
 
 	if err := b.Do(req, newJSONParser(resource)); err != nil {
@@ -195,7 +198,10 @@ func (b *BackendImplementation) Do(req *http.Request, parser responseParser) err
 	defer res.Body.Close()
 
 	if b.TestMode {
-		logResponse(res)
+		err := logResponse(res)
+		if err != nil {
+			log.Printf("could not log response %v", err)
+		}
 	}
 
 	err = CheckResponseError(res)
@@ -240,25 +246,7 @@ func CheckResponseError(res *http.Response) error {
 	}
 
 	if res.StatusCode == http.StatusUnauthorized {
-		authError := &AuthError{}
-		err := json.Unmarshal(bodyBytes, &authError)
-		if err != nil {
-			return ResponseDecodingError{
-				Body:    bodyBytes,
-				Message: err.Error(),
-				Status:  res.StatusCode,
-			}
-		}
-
-		if authError.Empty() {
-			responseErr := &ResponseError{
-				Status:  res.StatusCode,
-				Message: string(bodyBytes),
-			}
-			return responseErr
-		}
-
-		return authError
+		return HandleAuthError(bodyBytes, res.StatusCode)
 	}
 
 	if res.StatusCode == http.StatusTooManyRequests {
@@ -270,63 +258,10 @@ func CheckResponseError(res *http.Response) error {
 	}
 
 	if res.StatusCode >= 400 && res.StatusCode < 500 {
-		badRequestError := &BadRequestError{}
-		err := json.Unmarshal(bodyBytes, &badRequestError)
-		if err != nil {
-			return ResponseDecodingError{
-				Body:    bodyBytes,
-				Message: err.Error(),
-				Status:  res.StatusCode,
-			}
-		}
-
-		if badRequestError.Empty() {
-			responseErr := &ResponseError{
-				Status:  res.StatusCode,
-				Message: string(bodyBytes),
-			}
-			return responseErr
-		}
-
-		return badRequestError
+		return HandleRequestError(bodyBytes, res.StatusCode)
 	}
 
-	// somehow a status 500 can also be a BadRequestError
-	// {"Reason":"BackendError"} status: 500
-	serverErr := &ServerError{}
-	err = json.Unmarshal(bodyBytes, &serverErr)
-	if err != nil {
-		return ResponseDecodingError{
-			Body:    bodyBytes,
-			Message: err.Error(),
-			Status:  res.StatusCode,
-		}
-	}
-
-	if serverErr.Empty() {
-		// try bad request
-		badRequestError := &BadRequestError{}
-		err = json.Unmarshal(bodyBytes, &badRequestError)
-		if err != nil {
-			return ResponseDecodingError{
-				Body:    bodyBytes,
-				Message: err.Error(),
-				Status:  res.StatusCode,
-			}
-		}
-
-		if badRequestError.Empty() {
-			responseErr := &ResponseError{
-				Status:  res.StatusCode,
-				Message: string(bodyBytes),
-			}
-			return responseErr
-		}
-
-		return badRequestError
-	}
-
-	return serverErr
+	return HandleServerError(bodyBytes, res.StatusCode)
 }
 
 // Used for debugging purposes
@@ -379,7 +314,10 @@ func setMobilePayAuthHeader(req *http.Request, body string, signer jose.Signer, 
 	// concat url and body
 	payload := req.URL.String() + body
 	// hash payload
-	payloadSha1 := sha1Hash([]byte(payload))
+	payloadSha1, err := sha1Hash([]byte(payload))
+	if err != nil {
+		return err
+	}
 	// base64 encode hashed payload
 	payloadBase64 := base64.StdEncoding.EncodeToString(payloadSha1)
 	// generate JSON Web Signature for this payload
@@ -397,12 +335,15 @@ func setMobilePayAuthHeader(req *http.Request, body string, signer jose.Signer, 
 }
 
 // sha1Hash generates a SHA-1 hash based on the input and return the digest as a byte array
-func sha1Hash(data []byte) []byte {
+func sha1Hash(data []byte) ([]byte, error) {
 	hasher := sha1.New()
-	hasher.Write(data)
+	_, err := hasher.Write(data)
+	if err != nil {
+		return nil, err
+	}
 	digest := hasher.Sum(nil)
 
-	return digest
+	return digest, nil
 }
 
 func generateJWS(signer jose.Signer, pubKey *rsa.PublicKey, payload []byte) (*jose.JSONWebSignature, error) {

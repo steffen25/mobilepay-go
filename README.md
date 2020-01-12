@@ -1,7 +1,10 @@
 # mobilepay-go
 Go library for accessing various MobilePay APIs.
 
+[![Build Status](https://travis-ci.org/steffen25/mobilepay-go.svg?branch=master)](https://travis-ci.org/steffen25/mobilepay-go)
 [![Go Report Card](https://goreportcard.com/badge/github.com/steffen25/mobilepay-go)](https://goreportcard.com/report/github.com/steffen25/mobilepay-go)
+[![GoDoc](http://img.shields.io/badge/godoc-reference-blue.svg)](http://godoc.org/github.com/steffen25/mobilepay-go)
+[![codecov](https://codecov.io/gh/steffen25/mobilepay-go/branch/master/graph/badge.svg)](https://codecov.io/gh/steffen25/mobilepay-go)
 
 This library is still work in progress.
 
