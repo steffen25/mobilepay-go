@@ -240,25 +240,7 @@ func CheckResponseError(res *http.Response) error {
 	}
 
 	if res.StatusCode == http.StatusUnauthorized {
-		authError := &AuthError{}
-		err := json.Unmarshal(bodyBytes, &authError)
-		if err != nil {
-			return ResponseDecodingError{
-				Body:    bodyBytes,
-				Message: err.Error(),
-				Status:  res.StatusCode,
-			}
-		}
-
-		if authError.Empty() {
-			responseErr := &ResponseError{
-				Status:  res.StatusCode,
-				Message: string(bodyBytes),
-			}
-			return responseErr
-		}
-
-		return authError
+		return HandleAuthError(bodyBytes, res.StatusCode)
 	}
 
 	if res.StatusCode == http.StatusTooManyRequests {
@@ -270,63 +252,10 @@ func CheckResponseError(res *http.Response) error {
 	}
 
 	if res.StatusCode >= 400 && res.StatusCode < 500 {
-		badRequestError := &BadRequestError{}
-		err := json.Unmarshal(bodyBytes, &badRequestError)
-		if err != nil {
-			return ResponseDecodingError{
-				Body:    bodyBytes,
-				Message: err.Error(),
-				Status:  res.StatusCode,
-			}
-		}
-
-		if badRequestError.Empty() {
-			responseErr := &ResponseError{
-				Status:  res.StatusCode,
-				Message: string(bodyBytes),
-			}
-			return responseErr
-		}
-
-		return badRequestError
+		return HandleRequestError(bodyBytes, res.StatusCode)
 	}
 
-	// somehow a status 500 can also be a BadRequestError
-	// {"Reason":"BackendError"} status: 500
-	serverErr := &ServerError{}
-	err = json.Unmarshal(bodyBytes, &serverErr)
-	if err != nil {
-		return ResponseDecodingError{
-			Body:    bodyBytes,
-			Message: err.Error(),
-			Status:  res.StatusCode,
-		}
-	}
-
-	if serverErr.Empty() {
-		// try bad request
-		badRequestError := &BadRequestError{}
-		err = json.Unmarshal(bodyBytes, &badRequestError)
-		if err != nil {
-			return ResponseDecodingError{
-				Body:    bodyBytes,
-				Message: err.Error(),
-				Status:  res.StatusCode,
-			}
-		}
-
-		if badRequestError.Empty() {
-			responseErr := &ResponseError{
-				Status:  res.StatusCode,
-				Message: string(bodyBytes),
-			}
-			return responseErr
-		}
-
-		return badRequestError
-	}
-
-	return serverErr
+	return HandleServerError(bodyBytes, res.StatusCode)
 }
 
 // Used for debugging purposes
