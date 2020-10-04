@@ -193,7 +193,7 @@ func TestCheckResponseError(t *testing.T) {
 
 		err := CheckResponseError(res)
 		assert.Error(t, err)
-		assert.EqualError(t, err, "mobilepay rate limit exceeded")
+		assert.EqualError(t, err, "MobilePay rate limit exceeded")
 	}
 
 	{
