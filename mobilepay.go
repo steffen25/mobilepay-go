@@ -268,7 +268,7 @@ func CheckResponseError(res *http.Response) error {
 func logRequest(req *http.Request) error {
 	requestDump, err := httputil.DumpRequest(req, true)
 	if err != nil {
-		log.Println(err)
+		return err
 	}
 	log.Println(string(requestDump))
 
@@ -279,7 +279,7 @@ func logRequest(req *http.Request) error {
 func logResponse(res *http.Response) error {
 	requestDump, err := httputil.DumpResponse(res, true)
 	if err != nil {
-		log.Println(err)
+		return err
 	}
 	log.Println(string(requestDump))
 
@@ -341,6 +341,7 @@ func sha1Hash(data []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	digest := hasher.Sum(nil)
 
 	return digest, nil
