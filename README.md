@@ -1,7 +1,11 @@
 # mobilepay-go
 Go library for accessing various MobilePay APIs.
 
+[![Build Status](https://github.com/steffen25/mobilepay-go/workflows/golangci-lint/badge.svg)](https://github.com/steffen25/mobilepay-go/actions?query=workflow%3Agolangci-lint)
+[![Test suite Status](https://github.com/steffen25/mobilepay-go/workflows/test-suite/badge.svg)](https://github.com/steffen25/mobilepay-go/actions?query=workflow%3Agolangci-lint)
 [![Go Report Card](https://goreportcard.com/badge/github.com/steffen25/mobilepay-go)](https://goreportcard.com/report/github.com/steffen25/mobilepay-go)
+[![GoDoc](http://img.shields.io/badge/godoc-reference-blue.svg)](http://godoc.org/github.com/steffen25/mobilepay-go)
+[![codecov](https://codecov.io/gh/steffen25/mobilepay-go/branch/master/graph/badge.svg)](https://codecov.io/gh/steffen25/mobilepay-go)
 
 This library is still work in progress.
 
@@ -50,6 +54,7 @@ func main() {
  import (
         "net/http"
         "time"
+        "fmt"
 
  	    "github.com/steffen25/mobilepay-go"
         "github.com/steffen25/mobilepay-go/client"
