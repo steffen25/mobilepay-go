@@ -70,7 +70,7 @@ func (e BadRequestError) Error() string {
 }
 
 func (e *RateLimitError) Error() string {
-	return fmt.Sprint("mobilepay rate limit exceeded")
+	return "MobilePay rate limit exceeded"
 }
 
 func (e *ServerError) Error() string {
