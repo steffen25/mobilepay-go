@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"github.com/steffen25/mobilepay-go"
 	"github.com/stretchr/testify/assert"
-	jwt "gopkg.in/dgrijalva/jwt-go.v3"
-	jose "gopkg.in/square/go-jose.v2"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -67,30 +65,20 @@ ODIRe1AuTyHceAbewn8b462yEWKARdpd9AjQW5SIVPfdsz5B6GlYQ5LdYKtznTuy
 7wIDAQAB
 -----END PUBLIC KEY-----`
 
-	privKey, err := jwt.ParseRSAPrivateKeyFromPEM([]byte(privPEM))
-	if err != nil {
-		log.Fatalf("could not parse private key %v", err)
-	}
-	pubKey, err := jwt.ParseRSAPublicKeyFromPEM([]byte(pubPEM))
-	if err != nil {
-		log.Fatalf("could not parse public key %v", err)
-	}
-	// Create a payload signer
-	signer, err := jose.NewSigner(jose.SigningKey{Algorithm: jose.RS256, Key: privKey}, nil)
-	if err != nil {
-		log.Fatalf("could not create signer %v", err)
-	}
-
 	url, err := url.Parse(server.URL + "/appswitch/api/v1/")
 	if err != nil {
 		log.Fatalf("could not parse HTTP record server url %v", err)
 	}
 
+	appCfg, err := mobilepay.NewConfig("1234", "1234",
+		mobilepay.OptionAppSwitchKeyPair([]byte(pubPEM), []byte(privPEM)),
+	)
+	if err != nil {
+		log.Fatalf("could not init config %v", err)
+	}
+
 	cfg := &mobilepay.BackendConfig{
-		AppConfig:  mobilepay.NewConfig("1234", "1234",
-			mobilepay.OptionPrivateKey(privKey),
-			mobilepay.OptionPublicKey(pubKey),
-			mobilepay.OptionSigner(signer)),
+		AppConfig:  appCfg,
 		HTTPClient: mobilepay.NewDefaultHTTPClient(),
 		URL:        url.String(),
 		TestMode:   false,
@@ -205,7 +193,7 @@ func TestClient_Capture(t *testing.T) {
 		fmt.Fprint(w, `{"TransactionId": "61872634691623746"}`)
 	})
 	captureParams := &CaptureParams{
-		Amount:  100.00,
+		Amount: 100.00,
 	}
 	transaction, err := client.Capture("1234", captureParams)
 	assert.Nil(t, err)
@@ -220,7 +208,7 @@ func TestClient_Capture_With_400Error(t *testing.T) {
 		fmt.Fprint(w, `{"Reason":"InvalidAmount"}`)
 	})
 	captureParams := &CaptureParams{
-		Amount:  1000.00,
+		Amount: 1000.00,
 	}
 	transaction, err := client.Capture("1234", captureParams)
 	assert.NotNil(t, err)
