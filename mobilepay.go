@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"github.com/google/go-querystring/query"
+	"gopkg.in/dgrijalva/jwt-go.v3"
 	"gopkg.in/square/go-jose.v2"
 	"io/ioutil"
 	"log"
@@ -32,11 +33,15 @@ const (
 type Config struct {
 	MerchantID      string
 	SubscriptionKey string
+	AppSwitchSigner *AppSwitchSigner
 	//IBMClientID     string
 	//IBMClientSecret string
-	PrivateKey      *rsa.PrivateKey
-	PublicKey       *rsa.PublicKey
-	AppSwitchSigner jose.Signer
+}
+
+type AppSwitchSigner struct {
+	PrivateKey *rsa.PrivateKey
+	PublicKey  *rsa.PublicKey
+	Signer     jose.Signer
 }
 
 type BackendType string
@@ -74,40 +79,51 @@ func newJSONParser(resource interface{}) responseParser {
 
 // Option defines an option to be applied on a config
 // Since the config is used across different backends some backends might need a specific element
-type Option func(*Config)
+type Option func(*Config) error
 
-// OptionPrivateKey sets the private key of a config
-func OptionPrivateKey(privKey *rsa.PrivateKey) func(*Config) {
-	return func(c *Config) {
-		c.PrivateKey = privKey
+func OptionAppSwitchKeyPair(pubKey, privKey []byte) func(*Config) error {
+	return func(c *Config) error {
+		_pubKey, err := jwt.ParseRSAPublicKeyFromPEM(pubKey)
+		if err != nil {
+			return err
+		}
+
+		_privKey, err := jwt.ParseRSAPrivateKeyFromPEM(privKey)
+		if err != nil {
+			return err
+		}
+
+		signer, err := jose.NewSigner(jose.SigningKey{Algorithm: jose.RS256, Key: _privKey}, nil)
+		if err != nil {
+			return err
+		}
+
+		c.AppSwitchSigner = &AppSwitchSigner{
+			PrivateKey: _privKey,
+			PublicKey:  _pubKey,
+			Signer:     signer,
+		}
+
+		return nil
 	}
 }
 
 // OptionPublicKey sets the public key of a config
-func OptionPublicKey(pubKey *rsa.PublicKey) func(*Config) {
-	return func(c *Config) {
-		c.PublicKey = pubKey
-	}
-}
 
-// OptionPublicKey sets the public key of a config
-func OptionSigner(signer jose.Signer) func(*Config) {
-	return func(c *Config) {
-		c.AppSwitchSigner = signer
-	}
-}
-
-func NewConfig(merchantId, subscriptionKey string, options ...Option) *Config {
+func NewConfig(merchantId, subscriptionKey string, options ...Option) (*Config, error) {
 	cfg := &Config{
 		MerchantID:      merchantId,
 		SubscriptionKey: subscriptionKey,
 	}
 
 	for _, opt := range options {
-		opt(cfg)
+		err := opt(cfg)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	return cfg
+	return cfg, nil
 }
 
 func NewBackends(cfg *Config, httpClient *http.Client) *Backends {
@@ -181,7 +197,7 @@ func (b *BackendImplementation) NewRequest(method, path string, body *bytes.Buff
 	switch b.Type {
 	case AppSwitchBackend:
 		req.Header.Set(AppSwitchSubscriptionHeaderKey, b.AppConfig.SubscriptionKey)
-		err = setMobilePayAuthHeader(req, bodyString, b.AppConfig.AppSwitchSigner, b.AppConfig.PublicKey)
+		err = setMobilePayAuthHeader(req, bodyString, b.AppConfig.AppSwitchSigner.Signer, b.AppConfig.AppSwitchSigner.PublicKey)
 		if err != nil {
 			return nil, err
 		}
