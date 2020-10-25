@@ -16,37 +16,45 @@ This library is still work in progress.
 
 ### Client configuration
 
- ```go
-import (
-	    "github.com/steffen25/mobilepay-go"
-	    "gopkg.in/dgrijalva/jwt-go.v3"
-        jose "gopkg.in/square/go-jose.v2"
-)
+  ```go
+ import (
+        "net/http"
+        "time"
+        "fmt"
 
-func main() {
-        // Parse a RSA key pair used to generate the authentication signature
-        privKey, err := jwt.ParseRSAPrivateKeyFromPEM([]byte(privPEM))
-        if err != nil {
-            // Handle error
-        }
-        pubKey, err := jwt.ParseRSAPublicKeyFromPEM([]byte(pubPEM))
-        if err != nil {
-            // Handle error
-        }
-        // Create a payload signer
-        signer, err := jose.NewSigner(jose.SigningKey{Algorithm: jose.RS256, Key: privKey}, nil)
-        if err != nil {
-            // Handle error
-        }
+ 	    "github.com/steffen25/mobilepay-go"
+        "github.com/steffen25/mobilepay-go/client"
+ )
+
+const pubPEM = `
+-----BEGIN PUBLIC KEY-----
+....
+-----END PUBLIC KEY-----
+`
+
+const privPEM = `
+-----BEGIN RSA PRIVATE KEY-----
+....
+-----END RSA PRIVATE KEY-----
+`
+ 
+ func main() {
+         // Prepare config
+         cfg, err := mobilepay.NewConfig("MERCHANT_ID", "SUBSCRIPTION_KEY",
+             mobilepay.OptionAppSwitchKeyPair([]byte(pubPEM), []byte(privPEM)),
+         )
+         if err != nil {
+             // handle error
+         }
         
-        // Prepare config
-        cfg := mobilepay.NewConfig("MERCHANT_ID", "SUBSCRIPTION_KEY", 
-            mobilepay.OptionPrivateKey(privKey),
-            mobilepay.OptionPublicKey(pubKey),
-            mobilepay.OptionSigner(signer),
-        )
-}
-```
+         httpClient := &http.Client{
+            Timeout: 5 * time.Second,
+         }
+         backends := mobilepay.NewBackends(cfg, httpClient)
+         mp := client.New(cfg, backends)
+        // see examples for how to use the mp client below.
+ }
+ ```
  
  ### Get payment status
  
@@ -58,37 +66,12 @@ func main() {
 
  	    "github.com/steffen25/mobilepay-go"
         "github.com/steffen25/mobilepay-go/client"
- 	    "gopkg.in/dgrijalva/jwt-go.v3"
-         jose "gopkg.in/square/go-jose.v2"
  )
  
  func main() {
-         // Parse a RSA key pair used to generate the authentication signature
-         privKey, err := jwt.ParseRSAPrivateKeyFromPEM([]byte(privPEM))
-         if err != nil {
-             // Handle error
-         }
-         pubKey, err := jwt.ParseRSAPublicKeyFromPEM([]byte(pubPEM))
-         if err != nil {
-             // Handle error
-         }
-         signer, err := jose.NewSigner(jose.SigningKey{Algorithm: jose.RS256, Key: privKey}, nil)
-         if err != nil {
-             // Handle error
-         }
-         
-         cfg := mobilepay.NewConfig("MERCHANT_ID", "SUBSCRIPTION_KEY", 
-             mobilepay.OptionPrivateKey(privKey),
-             mobilepay.OptionPublicKey(pubKey),
-             mobilepay.OptionSigner(signer),
-         )
-        
-         httpClient := &http.Client{
-            Timeout: 5 * time.Second,
-         }
-         backends := mobilepay.NewBackends(cfg, httpClient)
+         // client configuration skipped - see above.
          mp := client.New(cfg, backends)
-         
+         // get payment status
          status, err := mp.AppSwitch.GetPaymentStatus("ORDER_ID")
          if err != nil {
             // Handle error

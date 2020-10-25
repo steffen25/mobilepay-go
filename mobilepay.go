@@ -81,6 +81,8 @@ func newJSONParser(resource interface{}) responseParser {
 // Since the config is used across different backends some backends might need a specific element
 type Option func(*Config) error
 
+// OptionAppSwitchKeyPair configures the MobilePay client with a keypair and signer that can be used when sending requests to the AppSwitch API
+// This method should be used for unencrypted private keys.
 func OptionAppSwitchKeyPair(pubKey, privKey []byte) func(*Config) error {
 	return func(c *Config) error {
 		_pubKey, err := jwt.ParseRSAPublicKeyFromPEM(pubKey)
@@ -108,7 +110,34 @@ func OptionAppSwitchKeyPair(pubKey, privKey []byte) func(*Config) error {
 	}
 }
 
-// OptionPublicKey sets the public key of a config
+// OptionAppSwitchKeyPairWithPassword configures the MobilePay client with a keypair and signer that can be used when sending requests to the AppSwitch API
+// This method should be used if your private key is protected with a password.
+func OptionAppSwitchKeyPairWithPassword(pubKey, privKey []byte, password string) func(*Config) error {
+	return func(c *Config) error {
+		_pubKey, err := jwt.ParseRSAPublicKeyFromPEM(pubKey)
+		if err != nil {
+			return err
+		}
+
+		_privKey, err := jwt.ParseRSAPrivateKeyFromPEMWithPassword(privKey, password)
+		if err != nil {
+			return err
+		}
+
+		signer, err := jose.NewSigner(jose.SigningKey{Algorithm: jose.RS256, Key: _privKey}, nil)
+		if err != nil {
+			return err
+		}
+
+		c.AppSwitchSigner = &AppSwitchSigner{
+			PrivateKey: _privKey,
+			PublicKey:  _pubKey,
+			Signer:     signer,
+		}
+
+		return nil
+	}
+}
 
 func NewConfig(merchantId, subscriptionKey string, options ...Option) (*Config, error) {
 	cfg := &Config{
