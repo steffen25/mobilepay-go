@@ -2,8 +2,6 @@ package appswitch
 
 import (
 	"fmt"
-	"github.com/steffen25/mobilepay-go"
-	"github.com/stretchr/testify/assert"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -11,6 +9,9 @@ import (
 	"os"
 	"testing"
 	"time"
+
+	"github.com/steffen25/mobilepay-go"
+	"github.com/stretchr/testify/assert"
 )
 
 func setup() (c *Client, mux *http.ServeMux, serverURL string, teardown func()) {

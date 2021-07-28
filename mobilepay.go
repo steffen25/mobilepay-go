@@ -6,9 +6,6 @@ import (
 	"crypto/sha1"
 	"encoding/base64"
 	"encoding/json"
-	"github.com/google/go-querystring/query"
-	"gopkg.in/dgrijalva/jwt-go.v3"
-	"gopkg.in/square/go-jose.v2"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -18,6 +15,10 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/golang-jwt/jwt"
+	"github.com/google/go-querystring/query"
+	"gopkg.in/square/go-jose.v2"
 )
 
 const (

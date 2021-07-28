@@ -2,13 +2,14 @@ package mobilepay
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
-	"gopkg.in/dgrijalva/jwt-go.v3"
 	"io/ioutil"
 	"net/http"
 	"strings"
 	"testing"
+
+	"github.com/golang-jwt/jwt"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestNewBackendWithConfig(t *testing.T) {
