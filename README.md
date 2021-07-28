@@ -19,7 +19,7 @@ This library is still work in progress.
  ```go
 import (
 	    "github.com/steffen25/mobilepay-go"
-	    "gopkg.in/dgrijalva/jwt-go.v3"
+	    "github.com/golang-jwt/jwt"
         jose "gopkg.in/square/go-jose.v2"
 )
 
@@ -58,7 +58,7 @@ func main() {
 
  	    "github.com/steffen25/mobilepay-go"
         "github.com/steffen25/mobilepay-go/client"
- 	    "gopkg.in/dgrijalva/jwt-go.v3"
+ 	    "github.com/golang-jwt/jwt"
          jose "gopkg.in/square/go-jose.v2"
  )
  
