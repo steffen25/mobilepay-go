@@ -2,9 +2,9 @@ package appswitch
 
 import (
 	"fmt"
+	jwt "github.com/golang-jwt/jwt"
 	"github.com/steffen25/mobilepay-go"
 	"github.com/stretchr/testify/assert"
-	jwt "gopkg.in/dgrijalva/jwt-go.v3"
 	jose "gopkg.in/square/go-jose.v2"
 	"log"
 	"net/http"
@@ -87,7 +87,7 @@ ODIRe1AuTyHceAbewn8b462yEWKARdpd9AjQW5SIVPfdsz5B6GlYQ5LdYKtznTuy
 	}
 
 	cfg := &mobilepay.BackendConfig{
-		AppConfig:  mobilepay.NewConfig("1234", "1234",
+		AppConfig: mobilepay.NewConfig("1234", "1234",
 			mobilepay.OptionPrivateKey(privKey),
 			mobilepay.OptionPublicKey(pubKey),
 			mobilepay.OptionSigner(signer)),
@@ -205,7 +205,7 @@ func TestClient_Capture(t *testing.T) {
 		fmt.Fprint(w, `{"TransactionId": "61872634691623746"}`)
 	})
 	captureParams := &CaptureParams{
-		Amount:  100.00,
+		Amount: 100.00,
 	}
 	transaction, err := client.Capture("1234", captureParams)
 	assert.Nil(t, err)
@@ -220,7 +220,7 @@ func TestClient_Capture_With_400Error(t *testing.T) {
 		fmt.Fprint(w, `{"Reason":"InvalidAmount"}`)
 	})
 	captureParams := &CaptureParams{
-		Amount:  1000.00,
+		Amount: 1000.00,
 	}
 	transaction, err := client.Capture("1234", captureParams)
 	assert.NotNil(t, err)
