@@ -142,7 +142,7 @@ func (ps *PaymentServiceOp) Create(ctx context.Context, paymentParams *PaymentPa
 }
 
 func (ps *PaymentServiceOp) Cancel(ctx context.Context, paymentId string) error {
-	path := fmt.Sprintf("%ps/%ps/cancel", paymentsBasePath, paymentId)
+	path := fmt.Sprintf("%s/%s/cancel", paymentsBasePath, paymentId)
 
 	req, err := ps.client.NewRequest(ctx, http.MethodPost, path, nil)
 	if err != nil {
