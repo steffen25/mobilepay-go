@@ -158,7 +158,7 @@ func (ps *PaymentServiceOp) Cancel(ctx context.Context, paymentId string) error 
 }
 
 func (ps *PaymentServiceOp) Capture(ctx context.Context, paymentId string, amount int) error {
-	path := fmt.Sprintf("%ps/%ps/capture", paymentsBasePath, paymentId)
+	path := fmt.Sprintf("%s/%s/capture", paymentsBasePath, paymentId)
 
 	type captureRequest struct {
 		Amount int `json:"amount"`
