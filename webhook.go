@@ -28,11 +28,11 @@ func (webhookEvent WebhookEventEnum) Name() WebhookEvent {
 }
 
 type WebhookService interface {
-	List(context.Context) (*webhooksRoot, *Response, error)
-	Create(context.Context, *WebhookCreateRequest) (*Webhook, *Response, error)
-	Get(context.Context, string) (*Webhook, *Response, error)
-	Update(context.Context, string, *WebhookUpdateRequest) (*Webhook, *Response, error)
-	Delete(context.Context, string) (*Response, error)
+	List(context.Context) (*WebhooksRoot, error)
+	Create(context.Context, *WebhookCreateParams) (*Webhook, error)
+	Get(context.Context, string) (*Webhook, error)
+	Update(context.Context, string, *WebhookUpdateParams) (*Webhook, error)
+	Delete(context.Context, string) error
 }
 
 type WebhookServiceOp struct {
@@ -45,119 +45,119 @@ type GetWebhookResponse struct {
 	Webhooks []Webhook `json:"webhooks"`
 }
 
-// WebhookCreateRequest represents a request to create a payment.
-type WebhookCreateRequest struct {
+// WebhookCreateParams represents a request to create a payment.
+type WebhookCreateParams struct {
 	// List of subscribed events.
 	Events []WebhookEvent `json:"events"`
 	// URL to where webhook requests will be sent. Must be HTTPS. Scheme and host will be converted to lower case. Result can be seen in the response.
 	Url string `json:"url"`
 }
 
-// WebhookUpdateRequest represents a request to update a webhook record.
-type WebhookUpdateRequest struct {
+// WebhookUpdateParams represents a request to update a webhook record.
+type WebhookUpdateParams struct {
 	Url    string         `json:"url"`
 	Events []WebhookEvent `json:"events"`
 }
 
 type Webhook struct {
-	WebhookId    string   `json:"webhookId"`
-	SignatureKey string   `json:"signatureKey"`
-	Url          string   `json:"url"`
-	Events       []string `json:"events"`
+	WebhookId    string         `json:"webhookId"`
+	SignatureKey string         `json:"signatureKey"`
+	Url          string         `json:"url"`
+	Events       []WebhookEvent `json:"events"`
 }
 
 // webhooksRoot represents a response from the MobilePay App Payment API
-type webhooksRoot struct {
+type WebhooksRoot struct {
 	Webhooks []Webhook `json:"webhooks"`
 }
 
 // List all webhooks.
-func (s WebhookServiceOp) List(ctx context.Context) (*webhooksRoot, *Response, error) {
+func (s WebhookServiceOp) List(ctx context.Context) (*WebhooksRoot, error) {
 	path := webhooksBasePath
 
 	req, err := s.client.NewRequest(ctx, http.MethodGet, path, nil)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	root := new(webhooksRoot)
-	resp, err := s.client.Do(ctx, req, root)
+	root := new(WebhooksRoot)
+	_, err = s.client.Do(ctx, req, root)
 	if err != nil {
-		return nil, resp, err
+		return nil, err
 	}
 
-	return root, resp, err
+	return root, nil
 }
 
 // Create webhook
-func (s *WebhookServiceOp) Create(ctx context.Context, createRequest *WebhookCreateRequest) (*Webhook, *Response, error) {
+func (s *WebhookServiceOp) Create(ctx context.Context, createRequest *WebhookCreateParams) (*Webhook, error) {
 	if createRequest == nil {
-		return nil, nil, NewArgError("createRequest", "cannot be nil")
+		return nil, NewArgError("createRequest", "cannot be nil")
 	}
 
 	path := webhooksBasePath
 
 	req, err := s.client.NewRequest(ctx, http.MethodPost, path, createRequest)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	root := new(Webhook)
-	resp, err := s.client.Do(ctx, req, root)
-	if err != nil {
-		return nil, resp, err
-	}
-
-	return root, resp, err
-}
-
-// Get individual webhook. It requires a non-empty webhook id.
-func (s *WebhookServiceOp) Get(ctx context.Context, webhookId string) (*Webhook, *Response, error) {
-	path := fmt.Sprintf("%s/%s", webhooksBasePath, webhookId)
-
-	req, err := s.client.NewRequest(ctx, http.MethodGet, path, nil)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	root := new(Webhook)
-	resp, err := s.client.Do(ctx, req, root)
-	if err != nil {
-		return nil, resp, err
-	}
-
-	return root, resp, err
-}
-
-func (s WebhookServiceOp) Update(ctx context.Context, webhookId string, request *WebhookUpdateRequest) (*Webhook, *Response, error) {
-	path := fmt.Sprintf("%s/%s", webhooksBasePath, webhookId)
-
-	req, err := s.client.NewRequest(ctx, http.MethodPut, path, request)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	root := new(Webhook)
-	resp, err := s.client.Do(ctx, req, root)
-	if err != nil {
-		return nil, resp, err
-	}
-
-	return root, resp, err
-}
-
-func (s *WebhookServiceOp) Delete(ctx context.Context, webhookId string) (*Response, error) {
-	path := fmt.Sprintf("%s/%s", webhooksBasePath, webhookId)
-
-	req, err := s.client.NewRequest(ctx, http.MethodDelete, path, nil)
+	_, err = s.client.Do(ctx, req, root)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := s.client.Do(ctx, req, nil)
+	return root, err
+}
+
+// Get individual webhook. It requires a non-empty webhook id.
+func (s *WebhookServiceOp) Get(ctx context.Context, webhookId string) (*Webhook, error) {
+	path := fmt.Sprintf("%s/%s", webhooksBasePath, webhookId)
+
+	req, err := s.client.NewRequest(ctx, http.MethodGet, path, nil)
 	if err != nil {
-		return resp, err
+		return nil, err
 	}
 
-	return resp, err
+	root := new(Webhook)
+	_, err = s.client.Do(ctx, req, root)
+	if err != nil {
+		return nil, err
+	}
+
+	return root, err
+}
+
+func (s WebhookServiceOp) Update(ctx context.Context, webhookId string, request *WebhookUpdateParams) (*Webhook, error) {
+	path := fmt.Sprintf("%s/%s", webhooksBasePath, webhookId)
+
+	req, err := s.client.NewRequest(ctx, http.MethodPut, path, request)
+	if err != nil {
+		return nil, err
+	}
+
+	root := new(Webhook)
+	_, err = s.client.Do(ctx, req, root)
+	if err != nil {
+		return nil, err
+	}
+
+	return root, err
+}
+
+func (s *WebhookServiceOp) Delete(ctx context.Context, webhookId string) error {
+	path := fmt.Sprintf("%s/%s", webhooksBasePath, webhookId)
+
+	req, err := s.client.NewRequest(ctx, http.MethodDelete, path, nil)
+	if err != nil {
+		return err
+	}
+
+	_, err = s.client.Do(ctx, req, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

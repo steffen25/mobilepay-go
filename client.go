@@ -19,6 +19,7 @@ import (
 const (
 	libraryVersion       = "1.0.0"
 	defaultBaseURL       = "https://api.sandbox.mobilepay.dk/"
+	TestBaseUrl          = "https://api.sandbox.mobilepay.dk"
 	userAgent            = "mobilepay-go/" + libraryVersion
 	mediaType            = "application/json"
 	ibmClientIdHeaderKey = "x-ibm-client-id"

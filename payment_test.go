@@ -11,8 +11,6 @@ import (
 	"testing"
 )
 
-const TestBaseUrl = "https://api.sandbox.mobilepay.dk"
-
 var config = &Config{
 	HTTPClient: http.DefaultClient,
 }

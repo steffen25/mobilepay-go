@@ -10,7 +10,7 @@ import (
 	"testing"
 )
 
-func TestRefund_List(t *testing.T) {
+func TestRefunds_List(t *testing.T) {
 	defer gock.Off() // Flush pending mocks after test execution
 
 	testdata, err := ioutil.ReadFile("testdata/list_refunds.json")
@@ -45,7 +45,7 @@ func TestRefund_List(t *testing.T) {
 
 }
 
-func TestRefund_Create(t *testing.T) {
+func TestRefunds_Create(t *testing.T) {
 	defer gock.Off() // Flush pending mocks after test execution
 
 	testdata, err := ioutil.ReadFile("testdata/create_refund.json")
