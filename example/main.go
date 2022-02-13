@@ -43,5 +43,8 @@ func main() {
 
 	PaymentsResource{mp: client}.Routes(r)
 
-	r.Run(":" + port)
+	err = r.Run(":" + port)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
