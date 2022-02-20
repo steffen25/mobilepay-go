@@ -7,9 +7,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
-	"net/http/httputil"
 	"net/url"
 	"reflect"
 	"time"
@@ -19,10 +17,10 @@ import (
 
 // https://mobilepaydev.github.io/MobilePay-Payments-API/docs/payments-refunds/create-payments
 const (
-	libraryVersion       = "1.0.0"
-	defaultBaseURL       = "https://api.sandbox.mobilepay.dk/"
+	LibraryVersion       = "1.0.0"
+	DefaultBaseURL       = "https://api.mobilepay.dk"
 	TestBaseUrl          = "https://api.sandbox.mobilepay.dk"
-	userAgent            = "mobilepay-go/" + libraryVersion
+	userAgent            = "mobilepay-go/" + LibraryVersion
 	mediaType            = "application/json"
 	ibmClientIdHeaderKey = "x-ibm-client-id"
 	DefaultTimeout       = 10 * time.Second
@@ -38,9 +36,7 @@ type Client struct {
 	// User agent for client
 	UserAgent string
 
-	// Services used for communicating with the API
-
-	// Optional function called after every successful request made to the DO APIs
+	// Optional function called after every successful request made to the Mobilepay API
 	onRequestCompleted RequestCompletionCallback
 
 	// Optional extra HTTP headers to set on every request to the API.
@@ -75,9 +71,9 @@ type ErrorResponse struct {
 	Response *http.Response `json:"-"`
 
 	// Error message
-	Message    string        `json:"message,omitempty"`
-	Conflict   ConflictError `json:"conflict"`
-	StatusCode int           `json:"statusCode"`
+	Message    string         `json:"message,omitempty"`
+	Conflict   *ConflictError `json:"conflict"`
+	StatusCode int            `json:"statusCode"`
 }
 
 type ConflictError struct {
@@ -95,9 +91,12 @@ func newJSONParser(resource interface{}) responseParser {
 	}
 }
 
+// URL is the base url to the Mobilepay API.
+// You can use the constants defined in this package: DefaultBaseURL or TestBaseUrl
 type Config struct {
 	HTTPClient *http.Client
 	Logger     LeveledLoggerInterface
+	URL        string
 }
 
 func New(IbmClientId, apiKey string, config *Config) *Client {
@@ -109,7 +108,11 @@ func New(IbmClientId, apiKey string, config *Config) *Client {
 		config.Logger = DefaultLeveledLogger
 	}
 
-	baseURL, _ := url.Parse(defaultBaseURL)
+	if config.URL == "" {
+		config.URL = DefaultBaseURL
+	}
+
+	baseURL, _ := url.Parse(config.URL)
 
 	c := &Client{
 		client:    config.HTTPClient,
@@ -220,11 +223,6 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*Res
 	if err != nil {
 		return nil, err
 	}
-	requestDump, err := httputil.DumpResponse(resp, true)
-	if err != nil {
-		return nil, err
-	}
-	log.Println(string(requestDump))
 
 	if c.onRequestCompleted != nil {
 		c.onRequestCompleted(req, resp)
@@ -284,31 +282,19 @@ func CheckResponse(r *http.Response) error {
 		return nil
 	}
 
-	errorResponse := &ErrorResponse{Response: r, StatusCode: r.StatusCode}
+	errorResponse := &ErrorResponse{Response: r, StatusCode: r.StatusCode, Conflict: nil}
 	data, err := ioutil.ReadAll(r.Body)
 	if err == nil && len(data) > 0 {
-
-		isClientError := r.StatusCode >= 400 && r.StatusCode <= 499
-		isServerError := r.StatusCode >= 500 && r.StatusCode <= 599
-
-		if isClientError {
-			conflictError := ConflictError{}
-			err := json.Unmarshal(data, &conflictError)
-			if err == nil {
-				errorResponse.Conflict = conflictError
-			}
-			// if we can't decode the json response into our error struct or if its is empty
-			// return the raw body into the message property of the error.
-			if err != nil || (ConflictError{}) == conflictError {
-				errorResponse.Message = string(data)
-			}
+		// 400 and 500 errors use the same underlying type at Mobilepay.
+		conflictError := ConflictError{}
+		err := json.Unmarshal(data, &conflictError)
+		if err == nil {
+			errorResponse.Conflict = &conflictError
 		}
-
-		if isServerError {
-			err := json.Unmarshal(data, errorResponse)
-			if err != nil {
-				errorResponse.Message = string(data)
-			}
+		// if we can't decode the json response into our error struct or if its is empty
+		// return the raw body into the message property of the error.
+		if err != nil || (ConflictError{}) == conflictError {
+			errorResponse.Message = string(data)
 		}
 	}
 

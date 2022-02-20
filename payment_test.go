@@ -6,13 +6,13 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/h2non/gock.v1"
 	"io/ioutil"
-	"net/http"
 	"strconv"
 	"testing"
 )
 
 var config = &Config{
-	HTTPClient: http.DefaultClient,
+	HTTPClient: newDefaultHTTPClient(),
+	URL:        TestBaseUrl,
 }
 
 func TestPayments_List(t *testing.T) {
@@ -70,6 +70,16 @@ func TestPayments_Get(t *testing.T) {
 	payment, err := client.Payment.Get(ctx, "186d2b31-ff25-4414-9fd1-bfe9807fa8b7")
 	assert.Nil(t, err)
 	assert.NotNil(t, payment.PaymentId)
+}
+
+func TestPayments_Get_Empty_PaymentId(t *testing.T) {
+	client := New("test", "test", config)
+	ctx := context.TODO()
+
+	payment, err := client.Payment.Get(ctx, "")
+	assert.Error(t, err)
+	assert.IsType(t, &ArgError{}, err)
+	assert.Nil(t, payment)
 }
 
 func TestPayments_Create(t *testing.T) {

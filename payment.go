@@ -98,7 +98,9 @@ func (ps PaymentServiceOp) List(ctx context.Context, opts ListOptions) (*Payment
 }
 
 func (ps *PaymentServiceOp) Get(ctx context.Context, paymentId string) (*Payment, error) {
-	if len(paymentId) < 1 {
+	if paymentId == "" {
+		ps.client.Logger.Errorf("paymentParams cannot be empty")
+
 		return nil, NewArgError("paymentId", "cannot be empty")
 	}
 
@@ -120,7 +122,7 @@ func (ps *PaymentServiceOp) Get(ctx context.Context, paymentId string) (*Payment
 
 func (ps *PaymentServiceOp) Create(ctx context.Context, paymentParams *PaymentParams) (*CreatePaymentResponse, error) {
 	if paymentParams == nil {
-		ps.client.Logger.Errorf("paymentParams cannot be nil")
+		ps.client.Logger.Errorf("paymentParams cannot be nil %v", paymentParams)
 
 		return nil, NewArgError("paymentParams", "cannot be nil")
 	}
@@ -142,6 +144,12 @@ func (ps *PaymentServiceOp) Create(ctx context.Context, paymentParams *PaymentPa
 }
 
 func (ps *PaymentServiceOp) Cancel(ctx context.Context, paymentId string) error {
+	if paymentId == "" {
+		ps.client.Logger.Errorf("paymentParams cannot be empty")
+
+		return NewArgError("paymentId", "cannot be empty")
+	}
+
 	path := fmt.Sprintf("%s/%s/cancel", paymentsBasePath, paymentId)
 
 	req, err := ps.client.NewRequest(ctx, http.MethodPost, path, nil)
@@ -158,6 +166,12 @@ func (ps *PaymentServiceOp) Cancel(ctx context.Context, paymentId string) error 
 }
 
 func (ps *PaymentServiceOp) Capture(ctx context.Context, paymentId string, amount int) error {
+	if paymentId == "" {
+		ps.client.Logger.Errorf("paymentId cannot be empty", paymentId)
+
+		return NewArgError("paymentId", "cannot be empty")
+	}
+
 	path := fmt.Sprintf("%s/%s/capture", paymentsBasePath, paymentId)
 
 	type captureRequest struct {
