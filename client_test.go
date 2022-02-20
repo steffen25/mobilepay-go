@@ -181,8 +181,3 @@ func TestClient_addOptions(t *testing.T) {
 		assert.Equal(t, "/appswitch/api/v1/reservations/merchants/APPDK0000000000/2020-01-04T19_58/2020-01-04T20_58?customerId=%2B4588888888", path)
 	}
 }
-
-// ***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
