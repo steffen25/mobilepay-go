@@ -1,0 +1,9 @@
+{
+  "refundId": "7576910d-9789-4fef-a72e-877d89afec94",
+  "paymentId": "PAYMENT_ID",
+  "amount": AMOUNT,
+  "description": "DESCRIPTION",
+  "reference": "REFERENCE",
+  "createdOn": "2021-07-19T12:42:38Z",
+  "remainingAmount": 750
+}

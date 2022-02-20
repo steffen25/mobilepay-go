@@ -1,0 +1,8 @@
+{
+  "webhookId": "WEBHOOK_ID",
+  "url": "WEBHOOK_URL",
+  "events": [
+    "payment.reserved"
+  ],
+  "signatureKey": "SIGNATURE_KEY"
+}
