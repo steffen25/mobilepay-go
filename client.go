@@ -273,8 +273,15 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*Res
 }
 
 func (r *ErrorResponse) Error() string {
-	return fmt.Sprintf("%v %v: %d %v",
+	defaultErrorMessage := fmt.Sprintf("%v %v: %d %v",
 		r.Response.Request.Method, r.Response.Request.URL, r.Response.StatusCode, r.Message)
+
+	if r.Conflict != nil {
+		return fmt.Sprintf("%s\nCode: %s\ncorrelationId: %s \nMessage: %s",
+			defaultErrorMessage, r.Conflict.Code, r.Conflict.CorrelationID, r.Conflict.Message)
+	}
+
+	return defaultErrorMessage
 }
 
 func CheckResponse(r *http.Response) error {

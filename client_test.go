@@ -113,6 +113,28 @@ func TestClient_ErrorResponse(t *testing.T) {
 				},
 			},
 		},
+		Message:    "Unknown error",
+		Conflict:   nil,
+		StatusCode: http.StatusConflict,
+	}
+
+	expected := fmt.Sprintf("%s %s: %d %v", "POST", "https://bla.com", 409, "Unknown error")
+
+	assert.Equal(t, expected, error.Error())
+}
+
+func TestClient_ErrorResponse_Conflict_Error(t *testing.T) {
+	error := ErrorResponse{
+		Response: &http.Response{
+			StatusCode: http.StatusConflict,
+			Request: &http.Request{
+				Method: http.MethodPost,
+				URL: &url.URL{
+					Scheme: "https",
+					Host:   "bla.com",
+				},
+			},
+		},
 		Message: "Unknown error",
 		Conflict: &ConflictError{
 			Code:          "amount_too_large",
@@ -123,7 +145,7 @@ func TestClient_ErrorResponse(t *testing.T) {
 		StatusCode: http.StatusConflict,
 	}
 
-	expected := fmt.Sprintf("%s %s: %d %v", "POST", "https://bla.com", 409, "Unknown error")
+	expected := fmt.Sprintf("%s %s: %d %v\nCode: %s\ncorrelationId: %s \nMessage: %s", "POST", "https://bla.com", 409, "Unknown error", "amount_too_large", "d503b7ed-b5d0-4751-b3ac-52ecd7cd3a4a", "Cannot capture a larger amount than is reserved.")
 
 	assert.Equal(t, expected, error.Error())
 }
@@ -173,11 +195,11 @@ func TestClient_addOptions(t *testing.T) {
 
 	{
 		type test struct {
-			CustomerID string `url:"customerId,omitempty"`
+			PageSize int `url:"pageSize,omitempty"`
 		}
-		params := &test{CustomerID: "+4588888888"}
-		path, err := addOptions("/appswitch/api/v1/reservations/merchants/APPDK0000000000/2020-01-04T19_58/2020-01-04T20_58", params)
+		params := &test{PageSize: 10}
+		path, err := addOptions("/v1/payments", params)
 		assert.NoError(t, err)
-		assert.Equal(t, "/appswitch/api/v1/reservations/merchants/APPDK0000000000/2020-01-04T19_58/2020-01-04T20_58?customerId=%2B4588888888", path)
+		assert.Equal(t, "/v1/payments?pageSize=10", path)
 	}
 }
