@@ -1,6 +1,13 @@
 package mobilepay
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
+
+var (
+	ErrMissingVerifierProperties = errors.New("missing required verifier properties signature or webhook url")
+)
 
 // ArgError is an error that represents an error with an input to mobilepay app payment. It
 // identifies the argument and the cause (if possible).
