@@ -1,0 +1,21 @@
+{
+  "webhooks": [
+    {
+      "webhookId": "e4a2e195-74f6-42e1-a172-83291c9d2a41",
+      "url": "https://www.my-site.com/webhooks",
+      "events": [
+        "payment.reserved"
+      ],
+      "signatureKey": "my-secure-signature-key"
+    },
+    {
+      "webhookId": "e5a2e195-74f6-42e1-a172-83291c9d2a42",
+      "url": "https://www.my-api.com/webhooks",
+      "events": [
+        "payment.expired",
+        "paymentpoint.activated"
+      ],
+      "signatureKey": "my-secure-signature-key"
+    }
+  ]
+}
