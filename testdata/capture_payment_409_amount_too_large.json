@@ -1,0 +1,6 @@
+{
+  "code": "amount_too_large",
+  "message": "Cannot capture a larger amount than is reserved.",
+  "correlationId": "d503b7ed-b5d0-4751-b3ac-52ecd7cd3a4a",
+  "origin": "MPY"
+}
