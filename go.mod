@@ -1,4 +1,4 @@
-module mobilepay
+module github.com/steffen25/mobilepay-go
 
 go 1.17
 
