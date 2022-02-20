@@ -46,7 +46,7 @@ func (rs *RefundServiceOp) Create(ctx context.Context, refundParams *RefundParam
 	if refundParams == nil {
 		rs.client.Logger.Errorf("refundParams cannot be nil")
 
-		return nil, NewArgError("refundParams", "cannot be nil")
+		return nil, newArgError("refundParams", "cannot be nil")
 	}
 
 	path := refundsBasePath

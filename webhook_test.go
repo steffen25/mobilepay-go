@@ -28,7 +28,7 @@ func TestWebhooks_List(t *testing.T) {
 
 	ctx := context.TODO()
 
-	data, err := client.Webhook.List(ctx)
+	data, err := client.Webhook.Get(ctx)
 	assert.Nil(t, err)
 	assert.Equal(t, 2, len(data.Webhooks))
 }
@@ -89,7 +89,7 @@ func TestWebhooks_Get(t *testing.T) {
 	client := New("test", "test", config)
 	ctx := context.TODO()
 
-	webhook, err := client.Webhook.Get(ctx, "e4a2e195-74f6-42e1-a172-83291c9d2a41")
+	webhook, err := client.Webhook.Find(ctx, "e4a2e195-74f6-42e1-a172-83291c9d2a41")
 
 	assert.Nil(t, err)
 	assert.Equal(t, "e4a2e195-74f6-42e1-a172-83291c9d2a41", webhook.WebhookId)

@@ -23,8 +23,8 @@ type RefundsListOptions struct {
 }
 
 type PaymentService interface {
-	List(context.Context, ListOptions) (*PaymentsRoot, error)
-	Get(context.Context, string) (*Payment, error)
+	Get(context.Context, ListOptions) (*PaymentsRoot, error)
+	Find(context.Context, string) (*Payment, error)
 	Create(context.Context, *PaymentParams) (*CreatePaymentResponse, error)
 
 	Cancel(ctx context.Context, paymentId string) error
@@ -32,9 +32,8 @@ type PaymentService interface {
 }
 
 type PaymentServiceOp struct {
-	Payment PaymentService
-	Refund  RefundService
-	client  *Client
+	Refund RefundService
+	client *Client
 }
 
 var _ PaymentService = &PaymentServiceOp{}
@@ -74,7 +73,7 @@ type PaymentParams struct {
 	Description    string `json:"description"`
 }
 
-func (ps PaymentServiceOp) List(ctx context.Context, opts ListOptions) (*PaymentsRoot, error) {
+func (ps PaymentServiceOp) Get(ctx context.Context, opts ListOptions) (*PaymentsRoot, error) {
 	path := paymentsBasePath
 
 	path, err := addOptions(path, opts)
@@ -97,11 +96,11 @@ func (ps PaymentServiceOp) List(ctx context.Context, opts ListOptions) (*Payment
 	return root, err
 }
 
-func (ps *PaymentServiceOp) Get(ctx context.Context, paymentId string) (*Payment, error) {
+func (ps *PaymentServiceOp) Find(ctx context.Context, paymentId string) (*Payment, error) {
 	if paymentId == "" {
 		ps.client.Logger.Errorf("paymentParams cannot be empty")
 
-		return nil, NewArgError("paymentId", "cannot be empty")
+		return nil, newArgError("paymentId", "cannot be empty")
 	}
 
 	path := fmt.Sprintf("%s/%s", paymentsBasePath, paymentId)
@@ -124,7 +123,7 @@ func (ps *PaymentServiceOp) Create(ctx context.Context, paymentParams *PaymentPa
 	if paymentParams == nil {
 		ps.client.Logger.Errorf("paymentParams cannot be nil %v", paymentParams)
 
-		return nil, NewArgError("paymentParams", "cannot be nil")
+		return nil, newArgError("paymentParams", "cannot be nil")
 	}
 
 	path := paymentsBasePath
@@ -147,7 +146,7 @@ func (ps *PaymentServiceOp) Cancel(ctx context.Context, paymentId string) error 
 	if paymentId == "" {
 		ps.client.Logger.Errorf("paymentParams cannot be empty")
 
-		return NewArgError("paymentId", "cannot be empty")
+		return newArgError("paymentId", "cannot be empty")
 	}
 
 	path := fmt.Sprintf("%s/%s/cancel", paymentsBasePath, paymentId)
@@ -169,7 +168,7 @@ func (ps *PaymentServiceOp) Capture(ctx context.Context, paymentId string, amoun
 	if paymentId == "" {
 		ps.client.Logger.Errorf("paymentId cannot be empty", paymentId)
 
-		return NewArgError("paymentId", "cannot be empty")
+		return newArgError("paymentId", "cannot be empty")
 	}
 
 	path := fmt.Sprintf("%s/%s/capture", paymentsBasePath, paymentId)

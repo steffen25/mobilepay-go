@@ -28,9 +28,9 @@ func (webhookEvent WebhookEventEnum) Name() WebhookEvent {
 }
 
 type WebhookService interface {
-	List(context.Context) (*WebhooksRoot, error)
+	Get(context.Context) (*WebhooksRoot, error)
 	Create(context.Context, *WebhookCreateParams) (*Webhook, error)
-	Get(context.Context, string) (*Webhook, error)
+	Find(context.Context, string) (*Webhook, error)
 	Update(context.Context, string, *WebhookUpdateParams) (*Webhook, error)
 	Delete(context.Context, string) error
 }
@@ -47,7 +47,7 @@ type GetWebhookResponse struct {
 
 // WebhookCreateParams represents a request to create a payment.
 type WebhookCreateParams struct {
-	// List of subscribed events.
+	// Find of subscribed events.
 	Events []WebhookEvent `json:"events"`
 	// URL to where webhook requests will be sent. Must be HTTPS. Scheme and host will be converted to lower case. Result can be seen in the response.
 	Url string `json:"url"`
@@ -72,7 +72,7 @@ type WebhooksRoot struct {
 }
 
 // List all webhooks.
-func (s WebhookServiceOp) List(ctx context.Context) (*WebhooksRoot, error) {
+func (s WebhookServiceOp) Get(ctx context.Context) (*WebhooksRoot, error) {
 	path := webhooksBasePath
 
 	req, err := s.client.NewRequest(ctx, http.MethodGet, path, nil)
@@ -92,7 +92,7 @@ func (s WebhookServiceOp) List(ctx context.Context) (*WebhooksRoot, error) {
 // Create webhook
 func (s *WebhookServiceOp) Create(ctx context.Context, createRequest *WebhookCreateParams) (*Webhook, error) {
 	if createRequest == nil {
-		return nil, NewArgError("createRequest", "cannot be nil")
+		return nil, newArgError("createRequest", "cannot be nil")
 	}
 
 	path := webhooksBasePath
@@ -112,7 +112,7 @@ func (s *WebhookServiceOp) Create(ctx context.Context, createRequest *WebhookCre
 }
 
 // Get individual webhook. It requires a non-empty webhook id.
-func (s *WebhookServiceOp) Get(ctx context.Context, webhookId string) (*Webhook, error) {
+func (s *WebhookServiceOp) Find(ctx context.Context, webhookId string) (*Webhook, error) {
 	path := fmt.Sprintf("%s/%s", webhooksBasePath, webhookId)
 
 	req, err := s.client.NewRequest(ctx, http.MethodGet, path, nil)

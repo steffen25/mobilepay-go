@@ -18,8 +18,8 @@ type ArgError struct {
 
 var _ error = &ArgError{}
 
-// NewArgError creates an InputError.
-func NewArgError(arg, reason string) *ArgError {
+// newArgError creates an InputError.
+func newArgError(arg, reason string) *ArgError {
 	return &ArgError{
 		arg:    arg,
 		reason: reason,
