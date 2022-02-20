@@ -33,7 +33,7 @@ func TestPayments_List(t *testing.T) {
 		Reply(200).
 		JSON(testdata)
 
-	client := NewClient("test", "test", config)
+	client := New("test", "test", config)
 	ctx := context.TODO()
 
 	listOptions := ListOptions{
@@ -64,7 +64,7 @@ func TestPayments_Get(t *testing.T) {
 		Reply(200).
 		JSON(testdata)
 
-	client := NewClient("test", "test", config)
+	client := New("test", "test", config)
 	ctx := context.TODO()
 
 	payment, err := client.Payment.Get(ctx, "186d2b31-ff25-4414-9fd1-bfe9807fa8b7")
@@ -87,7 +87,7 @@ func TestPayments_Create(t *testing.T) {
 		Reply(200).
 		JSON(testdata)
 
-	client := NewClient("test", "test", config)
+	client := New("test", "test", config)
 	ctx := context.TODO()
 
 	params := &PaymentParams{
@@ -114,7 +114,7 @@ func TestPayments_Cancel(t *testing.T) {
 		Post("/v1/payments/186d2b31-ff25-4414-9fd1-bfe9807fa8b7/cancel").
 		Reply(204)
 
-	client := NewClient("test", "test", config)
+	client := New("test", "test", config)
 	ctx := context.TODO()
 
 	err := client.Payment.Cancel(ctx, "186d2b31-ff25-4414-9fd1-bfe9807fa8b7")
@@ -129,7 +129,7 @@ func TestPayments_Capture(t *testing.T) {
 		Post("/v1/payments/206d2b31-ff25-4414-9fd1-bfe9807fa8b7/capture").
 		Reply(204)
 
-	client := NewClient("test", "test", config)
+	client := New("test", "test", config)
 	ctx := context.TODO()
 
 	err := client.Payment.Capture(ctx, "206d2b31-ff25-4414-9fd1-bfe9807fa8b7", 100)

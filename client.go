@@ -7,7 +7,9 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"reflect"
 	"time"
@@ -70,10 +72,19 @@ type Response struct {
 // An ErrorResponse reports the error caused by an API request
 type ErrorResponse struct {
 	// HTTP response that caused this error
-	Response *http.Response
+	Response *http.Response `json:"-"`
 
 	// Error message
-	Message string `json:"message"`
+	Message    string        `json:"message,omitempty"`
+	Conflict   ConflictError `json:"conflict"`
+	StatusCode int           `json:"statusCode"`
+}
+
+type ConflictError struct {
+	Code          string `json:"code"`
+	Message       string `json:"message"`
+	CorrelationID string `json:"correlationId"`
+	Origin        string `json:"origin"`
 }
 
 type responseParser func(*http.Response) error
@@ -89,7 +100,7 @@ type Config struct {
 	Logger     LeveledLoggerInterface
 }
 
-func NewClient(IbmClientId, apiKey string, config *Config) *Client {
+func New(IbmClientId, apiKey string, config *Config) *Client {
 	if config.HTTPClient == nil {
 		config.HTTPClient = newDefaultHTTPClient()
 	}
@@ -119,32 +130,6 @@ func NewClient(IbmClientId, apiKey string, config *Config) *Client {
 	c.headers["Authorization"] = fmt.Sprintf("Bearer %s", apiKey)
 
 	return c
-}
-
-// New returns a new MobilePay App Payment API client instance.
-func New(config *Config, opts ...ClientOpt) (*Client, error) {
-	c := NewClient("", "", config)
-	for _, opt := range opts {
-		if err := opt(c); err != nil {
-			return nil, err
-		}
-	}
-
-	return c, nil
-}
-
-func SetIbmClientId(clientId string) ClientOpt {
-	return func(c *Client) error {
-		c.headers[ibmClientIdHeaderKey] = clientId
-		return nil
-	}
-}
-
-func SetApiKey(apiKey string) ClientOpt {
-	return func(c *Client) error {
-		c.headers["Authorization"] = fmt.Sprintf("Bearer %s", apiKey)
-		return nil
-	}
 }
 
 func (c *Client) NewRequest(ctx context.Context, method, urlStr string, body interface{}) (*http.Request, error) {
@@ -235,11 +220,11 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*Res
 	if err != nil {
 		return nil, err
 	}
-	//requestDump, err := httputil.DumpResponse(resp, true)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//log.Println(string(requestDump))
+	requestDump, err := httputil.DumpResponse(resp, true)
+	if err != nil {
+		return nil, err
+	}
+	log.Println(string(requestDump))
 
 	if c.onRequestCompleted != nil {
 		c.onRequestCompleted(req, resp)
@@ -299,12 +284,31 @@ func CheckResponse(r *http.Response) error {
 		return nil
 	}
 
-	errorResponse := &ErrorResponse{Response: r}
+	errorResponse := &ErrorResponse{Response: r, StatusCode: r.StatusCode}
 	data, err := ioutil.ReadAll(r.Body)
 	if err == nil && len(data) > 0 {
-		err := json.Unmarshal(data, errorResponse)
-		if err != nil {
-			errorResponse.Message = string(data)
+
+		isClientError := r.StatusCode >= 400 && r.StatusCode <= 499
+		isServerError := r.StatusCode >= 500 && r.StatusCode <= 599
+
+		if isClientError {
+			conflictError := ConflictError{}
+			err := json.Unmarshal(data, &conflictError)
+			if err == nil {
+				errorResponse.Conflict = conflictError
+			}
+			// if we can't decode the json response into our error struct or if its is empty
+			// return the raw body into the message property of the error.
+			if err != nil || (ConflictError{}) == conflictError {
+				errorResponse.Message = string(data)
+			}
+		}
+
+		if isServerError {
+			err := json.Unmarshal(data, errorResponse)
+			if err != nil {
+				errorResponse.Message = string(data)
+			}
 		}
 	}
 

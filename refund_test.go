@@ -28,7 +28,7 @@ func TestRefunds_List(t *testing.T) {
 		Reply(200).
 		JSON(testdata)
 
-	client := NewClient("test", "test", config)
+	client := New("test", "test", config)
 
 	ctx := context.TODO()
 
@@ -63,7 +63,7 @@ func TestRefunds_Create(t *testing.T) {
 		Reply(200).
 		JSON(testdata)
 
-	client := NewClient("test", "test", config)
+	client := New("test", "test", config)
 	ctx := context.TODO()
 
 	params := &RefundParams{

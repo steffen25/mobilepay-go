@@ -24,7 +24,7 @@ func TestWebhooks_List(t *testing.T) {
 		Reply(200).
 		JSON(testdata)
 
-	client := NewClient("test", "test", config)
+	client := New("test", "test", config)
 
 	ctx := context.TODO()
 
@@ -55,7 +55,7 @@ func TestWebhooks_Create(t *testing.T) {
 		Reply(200).
 		JSON(testdata)
 
-	client := NewClient("test", "test", config)
+	client := New("test", "test", config)
 
 	params := &WebhookCreateParams{
 		Events: events,
@@ -86,7 +86,7 @@ func TestWebhooks_Get(t *testing.T) {
 		Reply(200).
 		JSON(testdata)
 
-	client := NewClient("test", "test", config)
+	client := New("test", "test", config)
 	ctx := context.TODO()
 
 	webhook, err := client.Webhook.Get(ctx, "e4a2e195-74f6-42e1-a172-83291c9d2a41")
@@ -114,7 +114,7 @@ func TestWebhooks_Update(t *testing.T) {
 		Reply(200).
 		JSON(testdata)
 
-	client := NewClient("test", "test", config)
+	client := New("test", "test", config)
 	ctx := context.TODO()
 
 	params := &WebhookUpdateParams{
@@ -137,7 +137,7 @@ func TestWebhooks_Delete(t *testing.T) {
 		Delete("/v1/webhooks/e4a2e195-74f6-42e1-a172-83291c9d2a41").
 		Reply(204)
 
-	client := NewClient("test", "test", config)
+	client := New("test", "test", config)
 	ctx := context.TODO()
 
 	err := client.Webhook.Delete(ctx, "e4a2e195-74f6-42e1-a172-83291c9d2a41")
