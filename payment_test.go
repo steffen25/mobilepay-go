@@ -3,11 +3,12 @@ package mobilepay
 import (
 	"bytes"
 	"context"
-	"github.com/stretchr/testify/assert"
-	"gopkg.in/h2non/gock.v1"
 	"io/ioutil"
 	"strconv"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"gopkg.in/h2non/gock.v1"
 )
 
 var config = &Config{
