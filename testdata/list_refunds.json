@@ -1,0 +1,46 @@
+{
+  "pageSize": PAGE_SIZE,
+  "nextPageNumber": NEXT_PAGE_NUMBER,
+  "refunds": [
+    {
+      "refundId": "7576910d-9789-4fef-a72e-877d89afec94",
+      "paymentId": "211444eb-1c4e-4194-a58f-905d97877cc5",
+      "amount": 100,
+      "description": "Lorem ipsum",
+      "reference": "order-212-32",
+      "createdOn": "2021-07-19T12:42:38+00:00"
+    },
+    {
+      "refundId": "7676910d-9789-4fef-a72e-877d89afec94",
+      "paymentId": "211444eb-1c4e-4194-a58f-905d97877cc5",
+      "amount": 200,
+      "description": "Lorem ipsum",
+      "reference": "order-212-32",
+      "createdOn": "2021-07-19T12:42:38+00:00"
+    },
+    {
+      "refundId": "7776910d-9789-4fef-a72e-877d89afec94",
+      "paymentId": "211444eb-1c4e-4194-a58f-905d97877cc5",
+      "amount": 300,
+      "description": "Lorem ipsum",
+      "reference": "order-212-32",
+      "createdOn": "2021-07-19T12:42:38+00:00"
+    },
+    {
+      "refundId": "7876910d-9789-4fef-a72e-877d89afec94",
+      "paymentId": "211444eb-1c4e-4194-a58f-905d97877cc5",
+      "amount": 400,
+      "description": "Lorem ipsum",
+      "reference": "order-212-32",
+      "createdOn": "2021-07-19T12:42:38+00:00"
+    },
+    {
+      "refundId": "7976910d-9789-4fef-a72e-877d89afec94",
+      "paymentId": "211444eb-1c4e-4194-a58f-905d97877cc5",
+      "amount": 500,
+      "description": "Lorem ipsum",
+      "reference": "order-212-32",
+      "createdOn": "2021-07-19T12:42:38+00:00"
+    }
+  ]
+}

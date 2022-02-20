@@ -1,0 +1,4 @@
+{
+  "paymentId": "PAYMENT_ID",
+  "mobilePayAppRedirectUri": "mobilepay://merchant_payments?payment_id=PAYMENT_ID"
+}
