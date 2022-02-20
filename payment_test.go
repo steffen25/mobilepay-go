@@ -41,7 +41,7 @@ func TestPayments_List(t *testing.T) {
 		PageNumber: 1,
 	}
 
-	data, err := client.Payment.List(ctx, listOptions)
+	data, err := client.Payment.Get(ctx, listOptions)
 
 	assert.Nil(t, err)
 	assert.True(t, len(data.Payments) == 3)
@@ -67,7 +67,7 @@ func TestPayments_Get(t *testing.T) {
 	client := New("test", "test", config)
 	ctx := context.TODO()
 
-	payment, err := client.Payment.Get(ctx, "186d2b31-ff25-4414-9fd1-bfe9807fa8b7")
+	payment, err := client.Payment.Find(ctx, "186d2b31-ff25-4414-9fd1-bfe9807fa8b7")
 	assert.Nil(t, err)
 	assert.NotNil(t, payment.PaymentId)
 }
@@ -76,7 +76,7 @@ func TestPayments_Get_Empty_PaymentId(t *testing.T) {
 	client := New("test", "test", config)
 	ctx := context.TODO()
 
-	payment, err := client.Payment.Get(ctx, "")
+	payment, err := client.Payment.Find(ctx, "")
 	assert.Error(t, err)
 	assert.IsType(t, &ArgError{}, err)
 	assert.Nil(t, payment)
